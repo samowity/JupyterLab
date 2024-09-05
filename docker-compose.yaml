@@ -1,0 +1,22 @@
+name: jupyterlab
+services:
+
+  jupyterlab:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.jupyterlab
+    container_name: jupyterlab
+    hostname: jupyterlab
+    restart: unless-stopped
+    # zmienne środowiskowe przekazywane do kontenera
+    environment:
+      - JUPYTER_TOKEN=${JUPYTERLAB_password}
+      - JUPYTER_WORKDIR=/home/jovyan/work
+
+    volumes:
+      - ${JUPYTERLAB_NOTEBOOKS_DIR}:/home/jovyan/work
+      - ${JUPYTERLAB_USER_MODULES_DIR}:/home/jovyan/user_modules
+      - ./jupyter_notebook_config.py://home/jovyan/.jupyter/jupyter_notebook_config.py:ro
+
+    ports:
+      - ${JUPYTERLAB_addr}:${JUPYTERLAB_port}:8888

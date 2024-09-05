@@ -1,0 +1,38 @@
+FROM quay.io/jupyter/minimal-notebook:lab-4.2.3
+SHELL ["/bin/bash", "-c"] 
+
+COPY ./requirements /requirements
+
+USER root
+# do instalacji wine32
+RUN dpkg --add-architecture i386
+RUN apt update && apt -y upgrade
+RUN apt install -y software-properties-common
+RUN add-apt-repository -y ppa:deadsnakes/ppa && apt update && apt -y upgrade
+RUN apt -y --ignore-missing install $(cat /requirements/apt.txt | grep -o '^[^#]*')
+
+USER ${NB_UID}
+
+RUN for PYTHON_VERSION in \
+        python3.10 \
+        python3.11 \
+        python3.12 \
+        ; \
+    do \
+        echo $PYTHON_VERSION; \
+        # utworzenie środowiska wirtualnego dla nowego kernela
+        $PYTHON_VERSION -m venv ~/venvs/$PYTHON_VERSION \
+        && source ~/venvs/$PYTHON_VERSION/bin/activate \
+        # instalacja zależności
+        && pip install --requirement /requirements/pip_$PYTHON_VERSION.txt \
+        # rejestracja kernela
+        && python -m ipykernel install --user --name $PYTHON_VERSION --display-name $PYTHON_VERSION \
+        && deactivate; \
+        # Dodanie ścieżki katalogu dla modułów użytkownika do site-packages środowiska wirtualnego.
+        # Katalog '~/user_modules/' jest montowany w docker-compose.yaml,
+        # co uniemożliwia utworzenie podkatalogu w nim '$PYTHON_VERSION/pth' bo katalog
+        # Podkatalog '$PYTHON_VERSION/pth' należy utwożyć ręcznie na hoście.
+        echo "$HOME/user_modules/$PYTHON_VERSION/pth" >> ~/venvs/$PYTHON_VERSION/lib/$PYTHON_VERSION/site-packages/py_modules.pth; \
+    done
+
+

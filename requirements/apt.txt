@@ -1,0 +1,25 @@
+# Lista pakietów do zainstalowania.
+# Usunięcie komentarzy i instalacja:
+# apt -y --ignore-missing install $(cat apt.txt | grep -o '^[^#]*')
+
+gcc
+# wine32
+texlive-lang-polish
+
+python3.10
+python3.10-dev
+python3.10-venv
+
+python3.11
+python3.11-dev
+python3.11-venv
+
+python3.12
+python3.12-dev
+python3.12-venv
+
+mdbtools
+libmariadb3
+libmariadb-dev
+
+
